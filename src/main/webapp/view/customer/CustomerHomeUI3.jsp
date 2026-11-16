@@ -49,14 +49,13 @@ if (validSearch) {
         <table aria-label="Danh sách mặt hàng">
             <thead>
                 <tr><th scope="col">Mã</th><th scope="col">Tên mặt hàng</th><th scope="col">Đơn vị</th>
-                    <th scope="col">Giá bán</th><th scope="col">Có thể đặt</th><th scope="col">Thao tác</th></tr>
+                    <th scope="col">Giá bán</th><th scope="col">Thao tác</th></tr>
             </thead>
             <tbody>
             <% for (Item3 item : items) { %>
                 <tr>
                     <td class="center"><%= item.itemID() %></td><td><%= html(item.itemName()) %></td>
                     <td class="center"><%= html(item.unit()) %></td><td class="amount"><%= number(item.price()) %> đ</td>
-                    <td class="center"><%= number(item.quantity()) %></td>
                     <td class="center">
                         <% if (item.quantity().signum() > 0) { %>
                             <a class="button" href="<%= app %>/view/customer/SelectItemUI3.jsp?itemID=<%= item.itemID() %>">Đặt</a>
@@ -65,7 +64,7 @@ if (validSearch) {
                 </tr>
             <% } %>
             <% if (items.isEmpty()) { %>
-                <tr class="empty"><td colspan="6"><%= !validSearch ? "Tên tìm kiếm quá dài."
+                <tr class="empty"><td colspan="5"><%= !validSearch ? "Tên tìm kiếm quá dài."
                         : itemName.isEmpty() ? "Cửa hàng chưa có mặt hàng đang bán." : "Không tìm thấy mặt hàng phù hợp." %></td></tr>
             <% } %>
             </tbody>

@@ -51,8 +51,7 @@ if ("POST".equals(request.getMethod())) {
                             } else if (!validQuantity(totalQuantity, item) || !validQuantity(quantity, item)) {
                                 message = "Nhập số lượng phù hợp với đơn vị " + item.unit() + ".";
                             } else if (check.availability() == ItemDAO3.Availability.INSUFFICIENT_STOCK) {
-                                message = "Tổng số lượng trong giỏ vượt tồn kho. Hiện có tối đa "
-                                        + number(item.quantity()) + " " + item.unit() + ".";
+                                message = "Không đủ hàng cho số lượng đã chọn. Vui lòng giảm số lượng hoặc chọn mặt hàng khác.";
                             } else if (add && check.availability() == ItemDAO3.Availability.PRICE_CHANGED) {
                                 message = "Giá bán đã thay đổi. Hãy xem giá mới và chọn Thêm vào giỏ để xác nhận.";
                             } else if (add) {
@@ -133,7 +132,6 @@ String draft = error == null ? "" : text(request.getParameter("quantity"));
             <span>Tên mặt hàng</span><output class="read-only"><%= html(item.itemName()) %></output>
             <span>Đơn vị tính</span><output class="read-only"><%= html(item.unit()) %></output>
             <span>Giá bán</span><output class="read-only"><%= number(item.price()) %> đ</output>
-            <span>Số lượng có thể đặt</span><output class="read-only"><%= available ? number(item.quantity()) : "0" %></output>
             <label for="quantity">Số lượng đặt <span class="required-mark" aria-hidden="true">*</span></label>
             <input id="quantity" name="quantity" type="number" min="0.01" step="0.01" value="<%= html(draft) %>"
                 <%= available ? "required" : "disabled" %>>

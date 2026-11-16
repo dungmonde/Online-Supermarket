@@ -60,8 +60,7 @@ if (!formErrors.isEmpty()) {
                                     problems.add(line.itemName() + " đã ngừng bán.");
                                     break;
                                 case INSUFFICIENT_STOCK:
-                                    problems.add(line.itemName() + " chỉ còn "
-                                        + number(check.item().quantity()) + " " + check.item().unit() + ".");
+                                    problems.add(line.itemName() + " không đủ hàng cho số lượng đã chọn. Vui lòng điều chỉnh giỏ.");
                                     break;
                                 case PRICE_CHANGED:
                                     lineDAO.updateItem(cartID, line.itemID(), line.quantity(), check.item().price());
@@ -90,9 +89,6 @@ if (!formErrors.isEmpty()) {
                             OnlineOrder3 order = new OnlineOrder3(currentMember == null ? null : currentMember.customerID(),
                                     recipientName, recipientPhone, deliveryAddress, note.isEmpty() ? null : note);
                             long orderID = new OnlineOrderDAO3(con).saveOrder(order, details);
-                            for (OnlineOrderDetail3 detail : details) {
-                                itemDAO.deductStock(detail.itemID(), detail.quantity());
-                            }
                             cartDAO.clearCart(cartID);
                             con.commit();
                             savedOrderID = orderID;
