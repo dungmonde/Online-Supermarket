@@ -4,14 +4,11 @@
 String title = "Giỏ hàng và thông tin nhận hàng";
 String error = (String) request.getAttribute("cartError");
 String notice;
-Long orderID;
 Long cartID;
 synchronized (session) {
     notice = (String) session.getAttribute("cartNotice");
-    orderID = (Long) session.getAttribute("savedOrderID");
     cartID = (Long) session.getAttribute("cartID");
     session.removeAttribute("cartNotice");
-    session.removeAttribute("savedOrderID");
 }
 List<CartItem3> items = List.of();
 if (cartID != null) {
@@ -86,10 +83,6 @@ String note = retry ? text(request.getParameter("note")) : "";
     </form>
     <% if (error != null) { %><p class="notice error" role="alert"><%= html(error) %></p><% } %>
     <% if (notice != null) { %><p class="notice" role="status"><%= html(notice) %></p><% } %>
-    <% if (orderID != null) { %>
-        <p class="notice success" role="status">Đặt hàng thành công. Đơn đang chờ duyệt.</p>
-        <p>Mã đơn <output class="order-code" id="orderID"><%= orderID %></output></p>
-    <% } %>
 </main>
 </body>
 </html>

@@ -90,9 +90,13 @@ if (!formErrors.isEmpty()) {
                             OnlineOrder3 order = new OnlineOrder3(currentMember == null ? null : currentMember.customerID(),
                                     recipientName, recipientPhone, deliveryAddress, note.isEmpty() ? null : note);
                             long orderID = new OnlineOrderDAO3(con).saveOrder(order, details);
+                            for (OnlineOrderDetail3 detail : details) {
+                                itemDAO.deductStock(detail.itemID(), detail.quantity());
+                            }
                             cartDAO.clearCart(cartID);
                             con.commit();
                             savedOrderID = orderID;
+                            session.setAttribute("savedOrderID", orderID);
                         }
                     }
                 } catch (SQLException e) {
@@ -109,8 +113,7 @@ if (!formErrors.isEmpty()) {
 }
 
 if (savedOrderID != null) {
-    session.setAttribute("savedOrderID", savedOrderID);
-    response.sendRedirect(app + "/view/customer/ShoppingCartUI3.jsp");
+    response.sendRedirect(app + "/view/customer/OrderConfirmationUI3.jsp?orderID=" + savedOrderID);
 } else {
     request.setAttribute("checkoutRetry", true);
     request.setAttribute("cartError", error);

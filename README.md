@@ -75,5 +75,5 @@ JOIN tblOnlineOrderDetail3 AS d ON d.orderID = o.orderID
 ORDER BY o.orderID DESC, d.itemID;
 ```
 
-Trong đơn vãng lai, `customerID` là `NULL`. Khi lưu đơn thành công, dòng giỏ được xóa trong cùng giao dịch ghi đơn và chi tiết. Việc gửi đơn chưa giảm tồn kho. Nếu giá đổi trong lúc mua, giỏ hiện lại giá mới để khách xác nhận trước khi lưu đơn.
+Trong đơn vãng lai, `customerID` là `NULL`. Khi gửi đơn thành công, hệ thống lưu đơn và chi tiết, trừ số lượng tồn của từng mặt hàng trong `tblItem3` và làm rỗng giỏ trong cùng một giao dịch. Trang xác nhận hiển thị mã đơn, thông tin người nhận, mặt hàng và tổng tiền đã lưu. Nếu giá đổi trong lúc mua, giỏ hiện lại giá mới để khách xác nhận trước khi lưu đơn.
 

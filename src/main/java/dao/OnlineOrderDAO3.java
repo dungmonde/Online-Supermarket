@@ -3,13 +3,35 @@ package dao;
 import model.OnlineOrder3;
 import model.OnlineOrderDetail3;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public final class OnlineOrderDAO3 extends DAO3 {
+    public record ReceiptLine(OnlineOrderDetail3 detail, String itemName, String unit) {}
+
+    public record OrderReceipt(long orderID, LocalDateTime placedAt, String status, OnlineOrder3 order,
+                               List<ReceiptLine> lines) {
+        public BigDecimal total() {
+            return lines.stream().map(line -> line.detail().lineTotal()).reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
+
+        public String statusLabel() {
+            return switch (status) {
+                case "PENDING" -> "Chờ duyệt";
+                case "APPROVED" -> "Đã duyệt";
+                case "REJECTED" -> "Từ chối";
+                case "HANDED_OVER" -> "Đã bàn giao";
+                default -> status;
+            };
+        }
+    }
+
     public OnlineOrderDAO3(Connection con) {
         super(con);
     }
@@ -55,5 +77,35 @@ public final class OnlineOrderDAO3 extends DAO3 {
             ps.executeBatch();
         }
         return orderID;
+    }
+
+    public OrderReceipt getOrderReceipt(long orderID) throws SQLException {
+        try (var ps = con.prepareStatement("""
+                SELECT o.date, o.recipientName, o.recipientPhone, o.deliveryAddress, o.note, o.customerID, o.status,
+                       d.itemID, d.quantity, d.unitPrice, i.itemName, i.unit
+                FROM tblOnlineOrder3 o
+                JOIN tblOnlineOrderDetail3 d ON d.orderID = o.orderID
+                JOIN tblItem3 i ON i.itemID = d.itemID
+                WHERE o.orderID = ?
+                ORDER BY d.orderDetailID
+                """)) {
+            ps.setLong(1, orderID);
+            try (var rows = ps.executeQuery()) {
+                if (!rows.next()) {
+                    return null;
+                }
+                var order = new OnlineOrder3(rows.getObject("customerID", Long.class), rows.getString("recipientName"),
+                        rows.getString("recipientPhone"), rows.getString("deliveryAddress"), rows.getString("note"));
+                LocalDateTime placedAt = rows.getObject("date", LocalDateTime.class);
+                String status = rows.getString("status");
+                List<ReceiptLine> lines = new ArrayList<>();
+                do {
+                    var detail = new OnlineOrderDetail3(rows.getLong("itemID"), rows.getBigDecimal("quantity"),
+                            rows.getBigDecimal("unitPrice"));
+                    lines.add(new ReceiptLine(detail, rows.getString("itemName"), rows.getString("unit")));
+                } while (rows.next());
+                return new OrderReceipt(orderID, placedAt, status, order, List.copyOf(lines));
+            }
+        }
     }
 }

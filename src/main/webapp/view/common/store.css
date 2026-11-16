@@ -61,7 +61,9 @@ textarea { resize: vertical; min-height: 58px; }
 .foot { margin-top: 18px; display: flex; gap: 12px; }
 .line-actions { display: flex; gap: 7px; align-items: center; justify-content: center; }
 .line-actions input[type=number] { width: 75px; }
-.order-code { display: inline-block; background: var(--gray); border: 1px solid var(--border); padding: 9px 14px; margin-left: 8px; }
+.order-info dt { font-weight: bold; }
+.order-info dd { margin: 0; overflow-wrap: anywhere; }
+.order-info .note { white-space: pre-wrap; }
 @media (max-width: 760px) {
     .page { padding: 15px; margin: 12px auto; }
     .masthead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 7px; }

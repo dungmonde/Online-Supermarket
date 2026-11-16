@@ -87,6 +87,21 @@ public final class ItemDAO3 extends DAO3 {
         return new OrderItemCheck(Availability.OK, item);
     }
 
+    public void deductStock(long itemID, BigDecimal orderedQuantity) throws SQLException {
+        String sql = """
+                UPDATE tblItem3 SET quantity = quantity - ?
+                WHERE itemID = ? AND status = 'ACTIVE' AND quantity >= ?
+                """;
+        try (var ps = con.prepareStatement(sql)) {
+            ps.setBigDecimal(1, orderedQuantity);
+            ps.setLong(2, itemID);
+            ps.setBigDecimal(3, orderedQuantity);
+            if (ps.executeUpdate() != 1) {
+                throw new SQLException("Could not deduct stock for itemID=" + itemID);
+            }
+        }
+    }
+
     private static List<Item3> readItems(ResultSet rows) throws SQLException {
         try (rows) {
             List<Item3> items = new ArrayList<>();
