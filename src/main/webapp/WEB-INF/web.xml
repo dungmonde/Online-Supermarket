@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="4.0">
+    <display-name>Hệ thống quản lí siêu thị trực tuyến</display-name>
+    <request-character-encoding>UTF-8</request-character-encoding>
+    <session-config>
+        <session-timeout>30</session-timeout>
+        <cookie-config><http-only>true</http-only></cookie-config>
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
+    <welcome-file-list><welcome-file>view/customer/CustomerHomeUI3.jsp</welcome-file></welcome-file-list>
+    <error-page><error-code>500</error-code><location>/WEB-INF/view/common/ErrorUI3.jsp</location></error-page>
+</web-app>

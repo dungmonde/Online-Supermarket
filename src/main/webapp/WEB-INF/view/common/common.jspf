@@ -1,0 +1,100 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
+<%@ page import="java.math.BigDecimal,java.sql.SQLException,java.util.*,dao.*,model.*" %>
+<%@ page import="java.nio.charset.StandardCharsets,java.security.MessageDigest,java.security.NoSuchAlgorithmException" %>
+<%@ page import="java.text.DecimalFormat,java.text.NumberFormat" %>
+<%!
+    private static final Set<String> COUNTED_UNITS = Set.of(
+            "hộp", "chai", "lon", "gói", "cái", "chiếc", "quả", "trái", "túi", "thùng", "lọ", "bịch");
+    private static final Locale VIETNAM = Locale.forLanguageTag("vi-VN");
+    private static final String PHONE_INPUT_PATTERN =
+            "\\s*(?=(?:\\D*[0-9]){7,15}\\D*$)\\+?[0-9][0-9 .\\(\\)\\-]*\\s*";
+
+    private static String html(Object value) {
+        return value == null ? "" : value.toString().replace("&", "&amp;").replace("<", "&lt;")
+                .replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&#39;");
+    }
+
+    private static String text(String value) {
+        return value == null ? "" : value.strip();
+    }
+
+    private static boolean within(String value, int limit) {
+        return value.codePointCount(0, value.length()) <= limit;
+    }
+
+    private static long id(String value) {
+        try {
+            long id = Long.parseLong(value);
+            return id > 0 ? id : 0;
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private static BigDecimal decimal(String value) {
+        if (value == null || !value.strip().matches("[0-9]{1,16}([.,][0-9]{1,2})?")) {
+            return null;
+        }
+        return new BigDecimal(value.strip().replace(',', '.'));
+    }
+
+    private static boolean validQuantity(BigDecimal value, Item3 item) {
+        if (value == null || value.signum() <= 0) {
+            return false;
+        }
+        boolean counted = COUNTED_UNITS.contains(item.unit().strip().toLowerCase(VIETNAM));
+        return !counted || value.stripTrailingZeros().scale() <= 0;
+    }
+
+    private static boolean validPhone(String value) {
+        if (!within(value, 25) || !value.matches("\\+?[0-9][0-9 .()\\-]*")) {
+            return false;
+        }
+        int digits = value.replaceAll("[^0-9]", "").length();
+        return digits >= 7 && digits <= 15;
+    }
+
+    private static String number(BigDecimal value) {
+        DecimalFormat format = (DecimalFormat) NumberFormat.getNumberInstance(VIETNAM);
+        format.setMaximumFractionDigits(2);
+        return format.format(value);
+    }
+
+    private static String inputNumber(BigDecimal value) {
+        return value.stripTrailingZeros().toPlainString();
+    }
+
+    private static BigDecimal total(List<CartItem3> items) {
+        return items.stream().map(CartItem3::lineTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private static String cartSnapshot(long cartID, List<CartItem3> items) {
+        try {
+            MessageDigest hash = MessageDigest.getInstance("SHA-256");
+            hash.update(Long.toString(cartID).getBytes(StandardCharsets.US_ASCII));
+            for (CartItem3 item : items) {
+                String line = "|" + item.cartItemID() + ":" + item.itemID()
+                        + ":" + item.quantity() + ":" + item.displayUnitPrice();
+                hash.update(line.getBytes(StandardCharsets.US_ASCII));
+            }
+            return HexFormat.of().formatHex(hash.digest());
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+%>
+<%
+String app = request.getContextPath();
+String csrf;
+synchronized (session) {
+    csrf = (String) session.getAttribute("csrf");
+    if (csrf == null) {
+        csrf = UUID.randomUUID().toString();
+        session.setAttribute("csrf", csrf);
+    }
+}
+Employee3 staff = (Employee3) session.getAttribute("warehouseStaff");
+Customer3 member = (Customer3) session.getAttribute("member");
+response.setHeader("Cache-Control", "no-store");
+%>

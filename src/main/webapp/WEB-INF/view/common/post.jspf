@@ -1,0 +1,13 @@
+<%@ page pageEncoding="UTF-8" %>
+<%
+if (!"POST".equals(request.getMethod())) {
+    response.setHeader("Allow", "POST");
+    response.sendError(405);
+    return;
+}
+request.setCharacterEncoding("UTF-8");
+if (!csrf.equals(request.getParameter("csrf"))) {
+    response.sendError(403, "Phiên làm việc đã thay đổi. Hãy tải lại trang.");
+    return;
+}
+%>

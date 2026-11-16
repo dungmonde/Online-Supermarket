@@ -1,0 +1,14 @@
+<%@ page pageEncoding="UTF-8" %>
+<%
+if (staff == null) {
+    response.sendRedirect(app + "/view/common/LoginUI3.jsp");
+    return;
+}
+try (java.sql.Connection con = DAO3.connect()) {
+    if (!new EmployeeDAO3(con).canEditItems(staff.employeeID())) {
+        session.removeAttribute("warehouseStaff");
+        response.sendError(403, "Tài khoản không có quyền quản lí mặt hàng.");
+        return;
+    }
+}
+%>
